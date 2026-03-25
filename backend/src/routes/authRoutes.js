@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { 
-  register, 
-  verifyOtp, 
-  setPassword, 
-  login 
+const {
+  adminRegister,
+  RegistrationVerifyOtp,
+  setPassword,
+  login
 } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
 
@@ -46,11 +46,11 @@ const { protect } = require('../middleware/authMiddleware');
  *       409:
  *         description: Duplicate email or mobile
  */
-router.post('/register', register);
+router.post('/register', adminRegister);
 
 /**
  * @swagger
- * /api/auth/verify-otp:
+ * /api/auth/RegistrationVerifyOtp:
  *   post:
  *     summary: Step 2 - Verify the OTP sent to email
  *     tags: [Auth]
@@ -76,7 +76,7 @@ router.post('/register', register);
  *       410:
  *         description: OTP expired
  */
-router.post('/verify-otp', verifyOtp);
+router.post('/RegistrationVerifyOtp', RegistrationVerifyOtp);
 
 /**
  * @swagger
@@ -109,7 +109,7 @@ router.post('/verify-otp', verifyOtp);
  *       403:
  *         description: OTP verification required first
  */
-router.post('/set-password', setPassword);
+router.post('/setPassword', setPassword);
 
 /**
  * @swagger
@@ -154,10 +154,10 @@ router.post('/login', login);
  *         description: Not authorized
  */
 router.get('/profile', protect, (req, res) => {
-  res.status(200).json({ 
-    success: true, 
-    message: 'Welcome to your profile!', 
-    admin: req.admin 
+  res.status(200).json({
+    success: true,
+    message: 'Welcome to your profile!',
+    admin: req.admin
   });
 });
 

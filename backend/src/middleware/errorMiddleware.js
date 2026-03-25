@@ -1,7 +1,7 @@
 const errorHandler = (err, req, res, next) => {
-  console.error(`Error: ${err.message}`.red);
+  console.error(`Error: ${err.message}`);
 
-  let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  let statusCode = err.status || (res.statusCode === 200 ? 500 : res.statusCode);
   let message = err.message || 'Internal Server Error';
 
   // Handle Mongoose duplicate key error
