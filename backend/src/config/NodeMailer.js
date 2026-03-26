@@ -14,7 +14,7 @@ const sendOtpEmail = async (toEmail, otp) => {
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: toEmail,
-      subject: 'Your Registration OTP - EpicEvents',
+      subject: 'Your EpicEvents OTP',
       text: `Your EpicEvents OTP is: ${otp}. It expires in 5 minutes.`,
     });
     console.log(`OTP email sent to ${toEmail}`);

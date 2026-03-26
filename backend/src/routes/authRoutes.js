@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const {
+  checkUser,
   adminRegister,
-  RegistrationVerifyOtp,
+  verifyOtp,
   setPassword,
-  login
+  login,
+  forgotPassword
 } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
 
@@ -14,6 +16,37 @@ const { protect } = require('../middleware/authMiddleware');
  *   name: Auth
  *   description: Registration and Authentication routes
  */
+
+/**
+ * @swagger
+ * /api/auth/checkUser:
+ *   post:
+ *     summary: Step 0 - Check if an admin with the given email/mobile is already registered
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - mobile
+ *               - email
+ *             properties:
+ *               mobile:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Fields are valid, proceed to next step
+ *       400:
+ *         description: Validation error
+ *       409:
+ *         description: Email or Mobile already in use
+ * 
+ */
+router.post('/checkUser', checkUser);
 
 /**
  * @swagger
@@ -50,9 +83,9 @@ router.post('/register', adminRegister);
 
 /**
  * @swagger
- * /api/auth/RegistrationVerifyOtp:
+ * /api/auth/verifyOtp:
  *   post:
- *     summary: Step 2 - Verify the OTP sent to email
+ *     summary: Verify OTP (Used for both Registration and Forgot Password)
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -72,11 +105,11 @@ router.post('/register', adminRegister);
  *       200:
  *         description: OTP verified successfully
  *       400:
- *         description: Invalid OTP
- *       410:
- *         description: OTP expired
+ *         description: Invalid or expired OTP
+ *       404:
+ *         description: User not found
  */
-router.post('/RegistrationVerifyOtp', RegistrationVerifyOtp);
+router.post('/verifyOtp', verifyOtp);
 
 /**
  * @swagger
@@ -138,6 +171,35 @@ router.post('/setPassword', setPassword);
  *         description: Invalid credentials
  */
 router.post('/login', login);
+
+/**
+ * @swagger
+ * /api/auth/forgotPassword:
+ *   post:
+ *     summary: Forgot Password - Send OTP to email
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password reset OTP sent to email
+ *       400:
+ *         description: Validation error
+ *       404:
+ *         description: Verified user not found with this email
+ */
+router.post('/forgotPassword', forgotPassword);
+
+
 
 /**
  * @swagger
