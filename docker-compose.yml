@@ -16,8 +16,19 @@ services:
     networks:
       - epicevents-network
 
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb-server
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - epicevents-network
+
 volumes:
   minio-data:
+  mongo-data:
 
 networks:
   epicevents-network:

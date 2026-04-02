@@ -11,7 +11,7 @@ initBucket();
 
 const server = app.listen(PORT, () => {
   console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
-  console.log(`Swagger Documentation: http://localhost:${PORT}/api-docs`);
+  // console.log(`Swagger Documentation: http://localhost:${PORT}/api-docs`);
 });
 
 // Handle unhandled promise rejections
