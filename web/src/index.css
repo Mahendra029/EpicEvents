@@ -1,0 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+/* Define custom theme values for Tailwind v4 */
+@theme {
+  --color-brand-light: #CDD7D6;
+  --color-brand: #F87060;
+  --color-brand-dark: #102542;
+  --font-outfit: "Outfit", sans-serif;
+  --shadow-premium: 0 10px 15px -3px rgb(16 37 66 / 0.1), 0 4px 6px -4px rgb(16 37 66 / 0.1);
+}
+
+@layer base {
+  body {
+    @apply bg-brand-light font-outfit text-brand-dark antialiased;
+  }
+}
+
+@layer components {
+  .btn-premium {
+    @apply w-full py-3.5 bg-brand text-white rounded-lg font-semibold 
+           transition-all duration-300 shadow-lg hover:bg-[#f65c49] 
+           hover:-translate-y-0.5 hover:shadow-brand/30 active:translate-y-0;
+  }
+  
+  .auth-card-container {
+    @apply min-h-screen flex items-center justify-center p-6 bg-[radial-gradient(circle_at_top_right,_#ffffff,_var(--color-brand-light))];
+  }
+  
+  .input-field-standard {
+    @apply w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-lg 
+           focus:border-brand focus:ring-4 focus:ring-brand/10 outline-none 
+           transition-all duration-200;
+  }
+}
