@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminRegister from './pages/admin/AdminRegister';
+import AdminForgotPassword from './pages/admin/AdminForgotPassword.jsx';
 import Dashboard from './pages/admin/Dashboard';
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
         {/* Admin Authentication Routes */}
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/register" element={<AdminRegister />} />
+        <Route path="/admin/forgot-password" element={<AdminForgotPassword />} />
         <Route path="/admin/dashboard" element={<Dashboard />} />
         
         {/* Fallback for 404 */}

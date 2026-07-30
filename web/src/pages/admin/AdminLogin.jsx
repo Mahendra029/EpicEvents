@@ -1,6 +1,6 @@
 import React from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { User, Lock, ArrowRight } from 'lucide-react';
 import InputField from '../../components/common/InputField';
 import BrandLogo from '../../components/common/BrandLogo';
@@ -70,9 +70,9 @@ const AdminLogin = () => {
             />
 
             <div className="mb-8 text-right">
-              <a href="#" className="text-brand text-sm font-semibold hover:underline">
+              <Link to="/admin/forgot-password" className="text-brand text-sm font-semibold hover:underline">
                 Forgot password?
-              </a>
+              </Link>
             </div>
 
             <button type="submit" className="w-full py-4 bg-brand text-white rounded-xl font-bold 

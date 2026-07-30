@@ -1,30 +1,30 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { User, Mail, Phone, Lock, Shield, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, Shield, ArrowRight, ArrowLeft } from 'lucide-react';
 import InputField from '../../components/common/InputField';
 import BrandLogo from '../../components/common/BrandLogo';
 import useForm from '../../hooks/useForm';
 
 const API_BASE = 'http://localhost:3000/api/auth';
 
-const AdminRegister = () => {
+const AdminForgotPassword = () => {
   const navigate = useNavigate();
-  const [step, setStep] = useState(1); // 1: details, 2: otp, 3: password
-  const [registeredEmail, setRegisteredEmail] = useState('');
+  const [step, setStep] = useState(1); // 1: email, 2: otp, 3: new password
+  const [resetEmail, setResetEmail] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Step 1 — POST /register { name, mobile, email }
-  const detailsForm = useForm(
-    { name: '', mobile: '', email: '' },
+  // Step 1 — POST /forgotPassword { email }
+  const emailForm = useForm(
+    { email: '' },
     async (values) => {
       setLoading(true);
       try {
-        await axios.post(`${API_BASE}/register`, values);
-        setRegisteredEmail(values.email);
+        await axios.post(`${API_BASE}/forgotPassword`, { email: values.email });
+        setResetEmail(values.email);
         setStep(2);
       } catch (error) {
-        alert(error.response?.data?.message || 'Registration failed. Please try again.');
+        alert(error.response?.data?.message || 'Could not send OTP. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -37,7 +37,7 @@ const AdminRegister = () => {
     async (values) => {
       setLoading(true);
       try {
-        await axios.post(`${API_BASE}/verifyOtp`, { email: registeredEmail, otp: values.otp });
+        await axios.post(`${API_BASE}/verifyOtp`, { email: resetEmail, otp: values.otp });
         setStep(3);
       } catch (error) {
         alert(error.response?.data?.message || 'Invalid or expired OTP.');
@@ -58,14 +58,14 @@ const AdminRegister = () => {
       setLoading(true);
       try {
         await axios.post(`${API_BASE}/setPassword`, {
-          email: registeredEmail,
+          email: resetEmail,
           password: values.password,
           confirmPassword: values.confirmPassword,
         });
-        alert('Account created successfully! Please login.');
+        alert('Password reset successfully! Please login.');
         navigate('/admin/login');
       } catch (error) {
-        alert(error.response?.data?.message || 'Failed to set password.');
+        alert(error.response?.data?.message || 'Failed to reset password.');
       } finally {
         setLoading(false);
       }
@@ -74,17 +74,21 @@ const AdminRegister = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-[radial-gradient(circle_at_top_right,_#ffffff,_#CDD7D6)]">
-      <div className="bg-white rounded-2xl shadow-premium w-full max-w-lg overflow-hidden relative border border-brand-dark/5">
+      <div className="bg-white rounded-2xl shadow-premium w-full max-w-md overflow-hidden relative border border-brand-dark/5">
         <div className="absolute -top-24 -right-24 w-60 h-60 bg-brand blur-[80px] opacity-[0.08] pointer-events-none" />
 
         <div className="p-10 pb-6 text-center bg-brand-dark text-white">
           <BrandLogo light />
-          <p className="mt-2 text-white/70 text-sm font-medium tracking-widest">REGISTRATION</p>
+          <p className="mt-2 text-white/70 text-sm font-medium tracking-widest">RESET PASSWORD</p>
         </div>
 
         <div className="px-10 pt-8 pb-4">
-          <h2 className="text-3xl font-bold text-brand-dark mb-1">Create Admin</h2>
-          <p className="text-gray-500 mb-2">Join the Epic Events management team.</p>
+          <h2 className="text-3xl font-bold text-brand-dark mb-1">Forgot password?</h2>
+          <p className="text-gray-500 mb-2">
+            {step === 1 && "Enter your email and we'll send you a code."}
+            {step === 2 && 'Enter the code we sent you.'}
+            {step === 3 && 'Choose a new password.'}
+          </p>
 
           {/* Step progress */}
           <div className="flex items-center gap-2 mb-8">
@@ -99,36 +103,14 @@ const AdminRegister = () => {
           </div>
 
           {step === 1 && (
-            <form onSubmit={detailsForm.handleSubmit}>
-              <InputField
-                label="Full Name"
-                name="name"
-                type="text"
-                placeholder="John Doe"
-                value={detailsForm.formData.name}
-                onChange={detailsForm.handleChange}
-                icon={User}
-                required
-              />
-
-              <InputField
-                label="Mobile Number"
-                name="mobile"
-                type="tel"
-                placeholder="9876543210"
-                value={detailsForm.formData.mobile}
-                onChange={detailsForm.handleChange}
-                icon={Phone}
-                required
-              />
-
+            <form onSubmit={emailForm.handleSubmit}>
               <InputField
                 label="Email Address"
                 name="email"
                 type="email"
                 placeholder="admin@epicevents.com"
-                value={detailsForm.formData.email}
-                onChange={detailsForm.handleChange}
+                value={emailForm.formData.email}
+                onChange={emailForm.handleChange}
                 icon={Mail}
                 required
               />
@@ -149,8 +131,7 @@ const AdminRegister = () => {
           {step === 2 && (
             <form onSubmit={otpForm.handleSubmit}>
               <p className="text-sm text-gray-500 mb-4">
-                Enter the 6-digit code sent to{' '}
-                <span className="font-semibold text-brand-dark">{registeredEmail}</span>
+                Code sent to <span className="font-semibold text-brand-dark">{resetEmail}</span>
               </p>
 
               <InputField
@@ -190,29 +171,27 @@ const AdminRegister = () => {
 
           {step === 3 && (
             <form onSubmit={passwordForm.handleSubmit}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <InputField
-                  label="Password"
-                  name="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={passwordForm.formData.password}
-                  onChange={passwordForm.handleChange}
-                  icon={Lock}
-                  required
-                />
+              <InputField
+                label="New Password"
+                name="password"
+                type="password"
+                placeholder="••••••••"
+                value={passwordForm.formData.password}
+                onChange={passwordForm.handleChange}
+                icon={Lock}
+                required
+              />
 
-                <InputField
-                  label="Confirm Password"
-                  name="confirmPassword"
-                  type="password"
-                  placeholder="••••••••"
-                  value={passwordForm.formData.confirmPassword}
-                  onChange={passwordForm.handleChange}
-                  icon={Shield}
-                  required
-                />
-              </div>
+              <InputField
+                label="Confirm New Password"
+                name="confirmPassword"
+                type="password"
+                placeholder="••••••••"
+                value={passwordForm.formData.confirmPassword}
+                onChange={passwordForm.handleChange}
+                icon={Shield}
+                required
+              />
 
               <button
                 type="submit"
@@ -222,16 +201,16 @@ const AdminRegister = () => {
                            hover:bg-[#f65c49] hover:-translate-y-1 hover:shadow-xl 
                            hover:shadow-brand/20 active:translate-y-0 disabled:opacity-60 disabled:pointer-events-none disabled:hover:translate-y-0"
               >
-                {loading ? 'CREATING ACCOUNT...' : 'REGISTER ACCOUNT'} <ArrowRight size={20} />
+                {loading ? 'RESETTING...' : 'RESET PASSWORD'} <ArrowRight size={20} />
               </button>
             </form>
           )}
         </div>
 
         <div className="px-10 pb-10 text-center text-sm text-gray-500">
-          Already have an account?{' '}
+          Remembered it?{' '}
           <a href="/admin/login" className="text-brand font-bold hover:underline">
-            Login Here
+            Back to Login
           </a>
         </div>
       </div>
@@ -239,4 +218,4 @@ const AdminRegister = () => {
   );
 };
 
-export default AdminRegister;
+export default AdminForgotPassword;
