@@ -1,29 +1,37 @@
-const Vendor = require('../models/Vendor');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
+
+const Vendor = require('../models/Vendor');
+const vendorRepository = require('../repositories/vendorRepository');
+const {
+  commonForgotPasswordService,
+  commonVerifyOtpService,
+  commonResetPasswordService,
+} = require('./commonAuthService');
 
 /**
  * Service to register a new vendor
  */
 const registerVendorService = async (vendorData) => {
-  // Check if vendor with same email or phone already exists
-  const existingVendor = await Vendor.findOne({
-    $or: [{ email: vendorData.email }, { phoneNumber: vendorData.phoneNumber }]
-  });
+  const result = await vendorRepository.registerIfNotExists(
+    { email: vendorData.email, phoneNumber: vendorData.phoneNumber },
+    vendorData
+  );
 
-  if (existingVendor) {
-    throw { 
-      status: 409, 
-      message: 'A vendor with this email or phone number is already registered.' 
+  const wasInserted = Boolean(result.lastErrorObject && result.lastErrorObject.upserted);
+
+  if (!wasInserted) {
+    throw {
+      status: 409,
+      message: 'A vendor with this email or phone number is already registered.',
     };
   }
 
-  const newVendor = new Vendor(vendorData);
-  await newVendor.save();
+  const newVendor = result.value;
 
   return {
     message: 'Registration successful! Your account is pending admin approval. You will be able to access your account once approved, typically within 24 hours.',
-    vendorId: newVendor._id
+    vendorId: newVendor._id,
   };
 };
 
@@ -31,15 +39,15 @@ const registerVendorService = async (vendorData) => {
  * Service to get vendor profile
  */
 const getVendorProfileService = async (id) => {
-  const vendor = await Vendor.findById(id);
+  const vendor = await vendorRepository.findById(id);
   if (!vendor) {
     throw { status: 404, message: 'Vendor not found' };
   }
 
   if (vendor.status !== 'approved') {
-    throw { 
-      status: 403, 
-      message: 'Your account is pending approval. Please wait for admin confirmation.' 
+    throw {
+      status: 403,
+      message: 'Your account is pending approval. Please wait for admin confirmation.',
     };
   }
 
@@ -50,7 +58,7 @@ const getVendorProfileService = async (id) => {
  * Service to get all vendors (Admin)
  */
 const getAllVendorsService = async () => {
-  return await Vendor.find().sort({ createdAt: -1 });
+  return await vendorRepository.findAll();
 };
 
 /**
@@ -61,11 +69,7 @@ const updateVendorStatusService = async (id, status) => {
     throw { status: 400, message: 'Invalid status. Use "approved" or "rejected".' };
   }
 
-  const vendor = await Vendor.findByIdAndUpdate(
-    id,
-    { status },
-    { new: true, runValidators: true }
-  );
+  const vendor = await vendorRepository.updateStatusById(id, status);
 
   if (!vendor) {
     throw { status: 404, message: 'Vendor not found' };
@@ -78,13 +82,12 @@ const updateVendorStatusService = async (id, status) => {
  * Service for vendor login
  */
 const loginVendorService = async (email, password) => {
-  const vendor = await Vendor.findOne({ email }).select('+password');
+  const vendor = await vendorRepository.findByEmailWithPassword(email);
 
   if (!vendor) {
     throw { status: 401, message: 'Invalid credentials or unapproved account.' };
   }
 
-  // Check approval status
   if (vendor.status !== 'approved') {
     throw { status: 403, message: 'Your account is pending approval. Please wait for admin confirmation.' };
   }
@@ -106,16 +109,10 @@ const loginVendorService = async (email, password) => {
       personName: vendor.personName,
       email: vendor.email,
       role: vendor.role,
-      companyName: vendor.companyName
-    }
+      companyName: vendor.companyName,
+    },
   };
 };
-
-const { 
-  commonForgotPasswordService, 
-  commonVerifyOtpService, 
-  commonResetPasswordService 
-} = require('./commonAuthService');
 
 /**
  * Service for vendor forgot password
@@ -148,5 +145,5 @@ module.exports = {
   loginVendorService,
   forgotPasswordVendorService,
   verifyOtpVendorService,
-  resetPasswordVendorService
+  resetPasswordVendorService,
 };
